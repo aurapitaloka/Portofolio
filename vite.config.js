@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
 
-export default defineConfig({
-  base: '/Portofolio/',
-})
+export default defineConfig(({ mode }) => ({
+  base: mode === 'gh' ? '/Portofolio/' : '/',
+}))

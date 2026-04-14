@@ -2,7 +2,7 @@
 <html lang="id" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="%BASE_URL%vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Portfolio - Aura Pitaloka</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -78,9 +78,9 @@
               <!-- EDIT: 
                 1. Taruh file CV PDF Anda di folder public/
                 2. Ganti nama file di href di bawah dengan nama file CV Anda
-                Contoh: Jika file CV Anda bernama "CV-Saya.pdf", ganti menjadi href="/CV-Saya.pdf"
+                Contoh: Jika file CV Anda bernama "CV-Saya.pdf", ganti menjadi href="%BASE_URL%CV-Saya.pdf"
               -->
-              <a href="/CV-Aura-Pitaloka.pdf" download="CV-Aura-Pitaloka.pdf" class="flex items-center gap-2 bg-slate-800 text-white px-8 py-4 rounded-lg font-semibold border border-slate-700 hover:border-primary hover:text-primary transition-all">
+              <a href="%BASE_URL%CV-Aura-Pitaloka.pdf" download="CV-Aura-Pitaloka.pdf" class="flex items-center gap-2 bg-slate-800 text-white px-8 py-4 rounded-lg font-semibold border border-slate-700 hover:border-primary hover:text-primary transition-all">
                 <i class="fas fa-file-download"></i>
                 Download CV
               </a>
@@ -109,7 +109,7 @@
                   <!-- Ganti src dengan path foto profil Anda -->
                   <!-- Cara: 1. Taruh foto di folder public/ 2. Ganti nama file di bawah -->
                   <img 
-                    src="/profile-photo.jpg" 
+                    src="%BASE_URL%profile-photo.jpg" 
                     alt="Aura Pitaloka" 
                     class="w-full h-full object-cover"
                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
