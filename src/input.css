@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .delay-1000 {
+    animation-delay: 1000ms;
+  }
+}
+
+@layer components {
+  .experience-tab.active {
+    @apply bg-primary text-white;
+  }
+
+  .project-image {
+    @apply block w-full h-full object-cover object-center;
+    transform: scale(1.12);
+  }
+}
