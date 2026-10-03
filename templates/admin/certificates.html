@@ -1,0 +1,208 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Kelola Sertifikasi & Prestasi{% endblock %}
+{% block header_title %}Sertifikasi & Prestasi{% endblock %}
+{% block header_desc %}Unggah sertifikat magang, kejuaraan lomba, dan pelatihan dengan gambar resolusi tinggi.{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-6xl">
+
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h3 class="text-lg font-bold text-white">Daftar Sertifikat ({{ certificates|length }})</h3>
+      <p class="text-xs text-slate-400">Pengunjung dapat melihat sertifikat ini dengan modal preview foto berkualitas tinggi.</p>
+    </div>
+
+    <button type="button" onclick="openAddCertModal()"
+      class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-teal-500/20 hover:opacity-95 transition-all flex items-center gap-2 self-start md:self-auto">
+      <i class="fas fa-plus"></i>
+      <span>Upload Sertifikat Baru</span>
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for c in certificates %}
+      <div class="bg-dark-850 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between group hover:border-slate-700 transition-all">
+        <div>
+          <!-- Certificate Image Preview -->
+          <div class="relative aspect-[16/10] bg-slate-900 overflow-hidden border-b border-slate-800">
+            {% if c.image_url %}
+              <img src="{{ url_for('serve_upload', subfolder='certificates', filename=c.image_url) }}" alt="{{ c.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            {% else %}
+              <div class="w-full h-full flex flex-col items-center justify-center text-slate-600">
+                <i class="fas fa-certificate text-3xl mb-1"></i>
+                <span class="text-[11px]">Belum ada gambar</span>
+              </div>
+            {% endif %}
+
+            <div class="absolute top-3 left-3">
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-900/90 text-amber-400 backdrop-blur-md border border-amber-500/30">
+                {{ c.category }}
+              </span>
+            </div>
+
+            <div class="absolute top-3 right-3">
+              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-900/80 text-slate-300 backdrop-blur-md">
+                {{ c.year }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="p-5">
+            <h4 class="font-bold text-base text-white line-clamp-1 group-hover:text-teal-400 transition-colors">{{ c.title }}</h4>
+            <p class="text-xs font-semibold text-amber-400 mt-1">{{ c.issuer }}</p>
+            {% if c.description %}
+              <p class="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">{{ c.description }}</p>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="p-4 bg-slate-900/50 border-t border-slate-800/80 flex items-center justify-between">
+          <div>
+            {% if c.credential_url %}
+              <a href="{{ c.credential_url }}" target="_blank" class="text-xs text-teal-400 hover:underline flex items-center gap-1">
+                <i class="fas fa-external-link-alt text-[10px]"></i> Kredensial
+              </a>
+            {% else %}
+              <span class="text-[11px] text-slate-500">Urutan: {{ c.order_num }}</span>
+            {% endif %}
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button type="button" onclick='openEditCertModal({{ c.id }}, {{ c.title|tojson }}, {{ c.issuer|tojson }}, {{ c.category|tojson }}, {{ c.year|tojson }}, {{ (c.description or "")|tojson }}, {{ (c.credential_url or "")|tojson }}, {{ c.order_num }})'
+              class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-teal-400 rounded-lg text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1">
+              <i class="fas fa-edit text-[11px]"></i> Edit
+            </button>
+            <form action="{{ url_for('admin_delete_certificate', id=c.id) }}" method="POST" onsubmit="return confirm('Hapus sertifikat ini?');" class="inline">
+              <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-400 transition-colors">
+                <i class="fas fa-trash text-xs"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% else %}
+      <p class="text-xs text-slate-400 col-span-full text-center py-8">Belum ada sertifikat.</p>
+    {% endfor %}
+  </div>
+
+</div>
+
+<!-- Modal Tambah / Edit Sertifikat -->
+<div id="modal-cert" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+  <div class="bg-dark-850 border border-slate-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+      <h3 id="modal-cert-title" class="font-bold text-white text-base">Unggah Sertifikat Baru</h3>
+      <button type="button" onclick="closeCertModal()" class="text-slate-400 hover:text-white">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <form id="cert-form" action="{{ url_for('admin_certificates') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Nama Sertifikat / Penghargaan</label>
+        <input type="text" id="cert-title" name="title" required placeholder="Contoh: Sertifikat Kejuaraan Code 5.0 - Juara 2"
+          class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Penerbit / Penyelenggara</label>
+          <input type="text" id="cert-issuer" name="issuer" required placeholder="Contoh: Software Development Competition"
+            class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Kategori</label>
+          <input type="text" id="cert-category" name="category" list="cert-categories" placeholder="Pilih/ketik kategori"
+            class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+          <datalist id="cert-categories">
+            <option value="Magang">
+            <option value="Kompetisi">
+            <option value="Pelatihan">
+            <option value="Sertifikasi Keahlian">
+            <option value="Webinar">
+          </datalist>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Tahun Perolehan</label>
+          <input type="text" id="cert-year" name="year" value="2025" required
+            class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Urutan Tampil</label>
+          <input type="number" id="cert-order" name="order_num" value="0"
+            class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Berkas Gambar Sertifikat (PNG / JPG / WEBP)</label>
+        <input type="file" name="image_file" accept="image/*"
+          class="block w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-500/10 file:text-teal-400 hover:file:bg-teal-500/20 cursor-pointer">
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Deskripsi Singkat</label>
+        <textarea id="cert-desc" name="description" rows="2" placeholder="Catatan atau rincian sertifikasi..."
+          class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 leading-relaxed"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Link Kredensial / Verifikasi Online (Opsional)</label>
+        <input type="url" id="cert-credential-url" name="credential_url" placeholder="https://..."
+          class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+      </div>
+
+      <div class="pt-3 flex justify-end gap-2">
+        <button type="button" onclick="closeCertModal()"
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Batal</button>
+        <button type="submit"
+          class="px-5 py-2 rounded-xl text-xs font-bold bg-teal-500 text-slate-950 hover:bg-teal-400">Simpan Sertifikat</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function openAddCertModal() {
+    const form = document.getElementById('cert-form');
+    form.action = "{{ url_for('admin_certificates') }}";
+    document.getElementById('modal-cert-title').textContent = "Unggah Sertifikat Baru";
+    document.getElementById('cert-title').value = '';
+    document.getElementById('cert-issuer').value = '';
+    document.getElementById('cert-category').value = 'Kompetisi';
+    document.getElementById('cert-year').value = '2025';
+    document.getElementById('cert-desc').value = '';
+    document.getElementById('cert-credential-url').value = '';
+    document.getElementById('cert-order').value = '0';
+    document.getElementById('modal-cert').classList.remove('hidden');
+  }
+
+  function openEditCertModal(id, title, issuer, category, year, desc, credUrl, order) {
+    const form = document.getElementById('cert-form');
+    form.action = "/admin/certificates/edit/" + id;
+    document.getElementById('modal-cert-title').textContent = "Edit Sertifikat: " + title;
+    document.getElementById('cert-title').value = title;
+    document.getElementById('cert-issuer').value = issuer;
+    document.getElementById('cert-category').value = category;
+    document.getElementById('cert-year').value = year;
+    document.getElementById('cert-desc').value = desc;
+    document.getElementById('cert-credential-url').value = credUrl;
+    document.getElementById('cert-order').value = order;
+    document.getElementById('modal-cert').classList.remove('hidden');
+  }
+
+  function closeCertModal() {
+    document.getElementById('modal-cert').classList.add('hidden');
+  }
+</script>
+{% endblock %}

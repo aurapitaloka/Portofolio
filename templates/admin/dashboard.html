@@ -1,0 +1,178 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Dashboard Overview{% endblock %}
+{% block header_title %}Ringkasan Portofolio{% endblock %}
+{% block header_desc %}Selamat datang di panel kontrol! Pantau dan kelola seluruh konten portofoliomu.{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+  <!-- Welcome Banner -->
+  <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-teal-900/40 via-slate-900 to-slate-900 border border-teal-500/20 p-6 md:p-8">
+    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="max-w-xl">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/30 mb-3">
+          <i class="fas fa-check-circle text-xs"></i> Database MySQL Aktif
+        </span>
+        <h2 class="text-2xl md:text-3xl font-bold text-white tracking-tight">
+          Halo, {{ profile_data.full_name if profile_data else 'Aura Pitaloka' }}! 👋
+        </h2>
+        <p class="text-sm text-slate-300 mt-2 leading-relaxed">
+          Semua konten halaman portofolio dapat kamu sesuaikan langsung dari sini tanpa perlu menyentuh baris kode lagi.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <a href="{{ url_for('admin_add_project') }}" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-teal-500/20 hover:opacity-95 transition-all flex items-center gap-2">
+          <i class="fas fa-plus"></i>
+          <span>Tambah Projek Baru</span>
+        </a>
+        <a href="{{ url_for('admin_profile') }}" class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs border border-slate-700 transition-all flex items-center gap-2">
+          <i class="fas fa-pen-to-square"></i>
+          <span>Edit Bio & Profil</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <!-- Projects -->
+    <a href="{{ url_for('admin_projects') }}" class="group bg-dark-850 border border-slate-800/80 hover:border-teal-500/40 p-5 rounded-2xl transition-all">
+      <div class="w-10 h-10 rounded-xl bg-teal-500/10 text-teal-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <i class="fas fa-layer-group text-lg"></i>
+      </div>
+      <div class="text-2xl font-extrabold text-white">{{ stats.projects }}</div>
+      <div class="text-xs text-slate-400 mt-1">Projek Portofolio</div>
+    </a>
+
+    <!-- Skills -->
+    <a href="{{ url_for('admin_skills') }}" class="group bg-dark-850 border border-slate-800/80 hover:border-cyan-500/40 p-5 rounded-2xl transition-all">
+      <div class="w-10 h-10 rounded-xl bg-cyan-500/10 text-cyan-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <i class="fas fa-code text-lg"></i>
+      </div>
+      <div class="text-2xl font-extrabold text-white">{{ stats.skills }}</div>
+      <div class="text-xs text-slate-400 mt-1">Skills & Tools</div>
+    </a>
+
+    <!-- Experiences -->
+    <a href="{{ url_for('admin_experiences') }}" class="group bg-dark-850 border border-slate-800/80 hover:border-blue-500/40 p-5 rounded-2xl transition-all">
+      <div class="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <i class="fas fa-briefcase text-lg"></i>
+      </div>
+      <div class="text-2xl font-extrabold text-white">{{ stats.experiences }}</div>
+      <div class="text-xs text-slate-400 mt-1">Pengalaman</div>
+    </a>
+
+    <!-- Certificates -->
+    <a href="{{ url_for('admin_certificates') }}" class="group bg-dark-850 border border-slate-800/80 hover:border-amber-500/40 p-5 rounded-2xl transition-all">
+      <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <i class="fas fa-award text-lg"></i>
+      </div>
+      <div class="text-2xl font-extrabold text-white">{{ stats.certificates }}</div>
+      <div class="text-xs text-slate-400 mt-1">Sertifikasi</div>
+    </a>
+
+    <!-- Messages -->
+    <a href="{{ url_for('admin_messages') }}" class="group bg-dark-850 border border-slate-800/80 hover:border-emerald-500/40 p-5 rounded-2xl transition-all">
+      <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <i class="fas fa-envelope text-lg"></i>
+      </div>
+      <div class="text-2xl font-extrabold text-white">{{ stats.messages }}</div>
+      <div class="text-xs text-slate-400 mt-1">Total Pesan</div>
+    </a>
+
+    <!-- Unread Messages -->
+    <a href="{{ url_for('admin_messages') }}" class="group bg-dark-850 border border-slate-800/80 hover:border-rose-500/40 p-5 rounded-2xl transition-all">
+      <div class="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-400 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+        <i class="fas fa-bell text-lg"></i>
+      </div>
+      <div class="text-2xl font-extrabold {% if stats.unread_messages > 0 %}text-rose-400 animate-pulse{% else %}text-white{% endif %}">
+        {{ stats.unread_messages }}
+      </div>
+      <div class="text-xs text-slate-400 mt-1">Belum Dibaca</div>
+    </a>
+  </div>
+
+  <!-- Content Split: Recent Projects & Recent Messages -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    
+    <!-- Latest Projects -->
+    <div class="bg-dark-850 border border-slate-800/80 rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-layer-group text-teal-400"></i>
+          <h3 class="font-bold text-white text-base">Projek Terbaru</h3>
+        </div>
+        <a href="{{ url_for('admin_projects') }}" class="text-xs text-teal-400 hover:text-teal-300 font-semibold flex items-center gap-1">
+          <span>Kelola Semua</span>
+          <i class="fas fa-chevron-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <div class="space-y-3">
+        {% for p in latest_projects %}
+          <div class="flex items-center justify-between p-3.5 bg-slate-900/60 border border-slate-800/80 rounded-xl hover:border-slate-700 transition-colors">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-12 h-12 rounded-lg bg-slate-800 overflow-hidden shrink-0 border border-slate-700">
+                {% if p.image_url %}
+                  <img src="{{ url_for('serve_upload', subfolder='projects', filename=p.image_url) }}" alt="{{ p.title }}" class="w-full h-full object-cover">
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center text-slate-600"><i class="fas fa-image"></i></div>
+                {% endif %}
+              </div>
+              <div class="min-w-0">
+                <h4 class="font-semibold text-sm text-white truncate">{{ p.title }}</h4>
+                <div class="flex items-center gap-2 mt-1">
+                  <span class="text-[11px] px-2 py-0.5 rounded-full bg-teal-500/10 text-teal-400 border border-teal-500/20">{{ p.category }}</span>
+                  {% if p.is_featured %}
+                    <span class="text-[10px] text-amber-400 flex items-center gap-1"><i class="fas fa-star text-[9px]"></i> Featured</span>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <a href="{{ url_for('admin_edit_project', id=p.id) }}" class="p-2 text-slate-400 hover:text-teal-400 hover:bg-slate-800 rounded-lg transition-colors ml-2">
+              <i class="fas fa-edit text-xs"></i>
+            </a>
+          </div>
+        {% else %}
+          <p class="text-xs text-slate-400 text-center py-6">Belum ada projek. Tambahkan projek pertamamu!</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Recent Messages -->
+    <div class="bg-dark-850 border border-slate-800/80 rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-envelope-open-text text-teal-400"></i>
+          <h3 class="font-bold text-white text-base">Pesan Masuk Terbaru</h3>
+        </div>
+        <a href="{{ url_for('admin_messages') }}" class="text-xs text-teal-400 hover:text-teal-300 font-semibold flex items-center gap-1">
+          <span>Lihat Semua</span>
+          <i class="fas fa-chevron-right text-[10px]"></i>
+        </a>
+      </div>
+
+      <div class="space-y-3">
+        {% for m in recent_messages %}
+          <div class="p-3.5 bg-slate-900/60 border {% if not m.is_read %}border-teal-500/40 bg-teal-950/10{% else %}border-slate-800/80{% endif %} rounded-xl transition-colors">
+            <div class="flex items-center justify-between mb-1.5">
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-xs text-white">{{ m.name }}</span>
+                <span class="text-[11px] text-slate-400">&bull; {{ m.email }}</span>
+              </div>
+              <span class="text-[10px] text-slate-400">{{ m.created_at.strftime('%d %b %H:%M') }}</span>
+            </div>
+            <p class="text-xs text-slate-300 line-clamp-2">{{ m.message }}</p>
+          </div>
+        {% else %}
+          <p class="text-xs text-slate-400 text-center py-6">Belum ada pesan masuk dari pengunjung website.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

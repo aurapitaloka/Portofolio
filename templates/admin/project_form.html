@@ -1,0 +1,190 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}{{ 'Edit Projek' if project else 'Tambah Projek Baru' }}{% endblock %}
+{% block header_title %}{{ 'Edit Projek: ' + project.title if project else 'Tambah Projek Baru' }}{% endblock %}
+{% block header_desc %}Lengkapi informasi projek, teknologi yang digunakan, serta lampiran dokumen atau tautan repositori.{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl space-y-6">
+
+  <div class="flex items-center justify-between">
+    <a href="{{ url_for('admin_projects') }}" class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 transition-colors">
+      <i class="fas fa-arrow-left"></i>
+      <span>Kembali ke Daftar Projek</span>
+    </a>
+  </div>
+
+  <form action="{{ url_for('admin_edit_project', id=project.id) if project else url_for('admin_add_project') }}" 
+        method="POST" enctype="multipart/form-data" class="space-y-6">
+
+    <!-- Card 1: Informasi Dasar Projek -->
+    <div class="bg-dark-850 border border-slate-800/80 rounded-2xl p-6 md:p-8 space-y-5">
+      <h3 class="text-base font-bold text-white pb-3 border-b border-slate-800 flex items-center gap-2">
+        <i class="fas fa-circle-info text-teal-400"></i>
+        <span>Informasi Utama Projek</span>
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Judul Projek</label>
+          <input type="text" name="title" value="{{ project.title if project else '' }}" required placeholder="Contoh: QA Testing — Senja App"
+            class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Kategori Projek</label>
+          <input type="text" name="category" list="project-categories" value="{{ project.category if project else 'Web Application' }}" required
+            placeholder="Pilih atau ketik kategori..."
+            class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+          <datalist id="project-categories">
+            <option value="Quality Assurance">
+            <option value="Web Application">
+            <option value="Mobile Game">
+            <option value="Desktop Applications">
+            <option value="UI/UX Design">
+          </datalist>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Urutan Tampil (Order Number)</label>
+          <input type="number" name="order_num" value="{{ project.order_num if project else 0 }}"
+            class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Ringkasan Singkat (Short Summary)</label>
+          <input type="text" name="short_desc" value="{{ project.short_desc if project else '' }}"
+            placeholder="Ringkasan 1-2 kalimat untuk ditampilkan di kartu"
+            class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Deskripsi Lengkap</label>
+          <textarea name="full_desc" rows="4" required placeholder="Deskripsikan fitur, peranmu, metodologi pengujian, dsb."
+            class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500 leading-relaxed">{{ project.full_desc if project else '' }}</textarea>
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Tech Stack & Tags (Pisahkan dengan koma)</label>
+          <input type="text" name="tech_tags" value="{{ project.tech_tags if project else '' }}"
+            placeholder="Contoh: Laravel, MySQL, ISO/IEC 25010, Katalon, Tailwind CSS"
+            class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5"><i class="fab fa-github text-teal-400 mr-1"></i> URL GitHub (Opsional)</label>
+          <input type="url" name="github_url" value="{{ project.github_url if project else '' }}" placeholder="https://github.com/..."
+            class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5"><i class="fas fa-globe text-teal-400 mr-1"></i> Live Demo URL (Opsional)</label>
+          <input type="url" name="demo_url" value="{{ project.demo_url if project else '' }}" placeholder="https://..."
+            class="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="flex items-center gap-3 p-3 bg-slate-900 border border-slate-800 rounded-xl cursor-pointer hover:border-slate-700">
+            <input type="checkbox" name="is_featured" value="1" {% if project and project.is_featured %}checked{% endif %}
+              class="w-4 h-4 text-teal-500 rounded border-slate-700 focus:ring-teal-500 bg-slate-800">
+            <div>
+              <span class="text-sm font-semibold text-white">Jadikan Projek Unggulan (Featured Project)</span>
+              <p class="text-xs text-slate-400">Projek akan ditampilkan dengan kartu lebih besar dan mencolok di halaman depan.</p>
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 2: Gambar Cover Projek -->
+    <div class="bg-dark-850 border border-slate-800/80 rounded-2xl p-6 md:p-8 space-y-4">
+      <h3 class="text-base font-bold text-white pb-3 border-b border-slate-800 flex items-center gap-2">
+        <i class="fas fa-image text-teal-400"></i>
+        <span>Cover Gambar Projek</span>
+      </h3>
+
+      <div class="flex flex-col md:flex-row items-center gap-6">
+        <div class="w-full md:w-56 h-36 rounded-xl bg-slate-900 border border-slate-700 overflow-hidden shrink-0 flex items-center justify-center">
+          {% if project and project.image_url %}
+            <img src="{{ url_for('serve_upload', subfolder='projects', filename=project.image_url) }}" alt="Preview" class="w-full h-full object-cover">
+          {% else %}
+            <div class="text-center text-slate-500">
+              <i class="fas fa-cloud-arrow-up text-3xl mb-1"></i>
+              <span class="block text-[11px]">Belum ada gambar</span>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="flex-1 w-full">
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Pilih Berkas Gambar Baru</label>
+          <input type="file" name="image_file" accept="image/*"
+            class="block w-full text-xs text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-teal-500/10 file:text-teal-400 hover:file:bg-teal-500/20 cursor-pointer">
+          <p class="text-[11px] text-slate-400 mt-2">Format: PNG, JPG, JPEG, WEBP. Disarankan rasio 16:9 atau resolusi minimal 800x450 piksel.</p>
+          {% if project and project.image_url %}
+            <span class="text-[11px] text-teal-400 block mt-1">File saat ini: {{ project.image_url }}</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Card 3: Berkas Dokumen QA / Capstone Project (PDF) -->
+    <div class="bg-dark-850 border border-slate-800/80 rounded-2xl p-6 md:p-8 space-y-4">
+      <h3 class="text-base font-bold text-white pb-3 border-b border-slate-800 flex items-center gap-2">
+        <i class="fas fa-file-shield text-teal-400"></i>
+        <span>Dokumentasi QA & Berkas Pendukung (Opsional)</span>
+      </h3>
+      <p class="text-xs text-slate-400">Unggah berkas PDF jika projek ini memiliki dokumentasi seperti QA Testing Senja App (PRD, Test Plan, Test Design, QA Report).</p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+        <!-- PRD Doc -->
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+          <label class="block text-xs font-semibold text-slate-300 mb-1"><i class="fas fa-file-pdf text-rose-400 mr-1"></i> Product Requirement Doc (PRD)</label>
+          <input type="file" name="prd_doc_file" accept=".pdf" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-slate-800 file:text-teal-400">
+          {% if project and project.prd_doc %}
+            <a href="{{ url_for('serve_upload', subfolder='docs', filename=project.prd_doc) }}" target="_blank" class="text-[11px] text-teal-400 hover:underline mt-1.5 inline-block"><i class="fas fa-check"></i> {{ project.prd_doc }}</a>
+          {% endif %}
+        </div>
+
+        <!-- Test Plan Doc -->
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+          <label class="block text-xs font-semibold text-slate-300 mb-1"><i class="fas fa-file-pdf text-rose-400 mr-1"></i> Test Plan Doc</label>
+          <input type="file" name="test_plan_file" accept=".pdf" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-slate-800 file:text-teal-400">
+          {% if project and project.test_plan_doc %}
+            <a href="{{ url_for('serve_upload', subfolder='docs', filename=project.test_plan_doc) }}" target="_blank" class="text-[11px] text-teal-400 hover:underline mt-1.5 inline-block"><i class="fas fa-check"></i> {{ project.test_plan_doc }}</a>
+          {% endif %}
+        </div>
+
+        <!-- Test Design Doc -->
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+          <label class="block text-xs font-semibold text-slate-300 mb-1"><i class="fas fa-file-pdf text-rose-400 mr-1"></i> Test Design Doc</label>
+          <input type="file" name="test_design_file" accept=".pdf" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-slate-800 file:text-teal-400">
+          {% if project and project.test_design_doc %}
+            <a href="{{ url_for('serve_upload', subfolder='docs', filename=project.test_design_doc) }}" target="_blank" class="text-[11px] text-teal-400 hover:underline mt-1.5 inline-block"><i class="fas fa-check"></i> {{ project.test_design_doc }}</a>
+          {% endif %}
+        </div>
+
+        <!-- QA Report Doc -->
+        <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
+          <label class="block text-xs font-semibold text-slate-300 mb-1"><i class="fas fa-file-pdf text-rose-400 mr-1"></i> Laporan QA (ISO/IEC 25010)</label>
+          <input type="file" name="qa_report_file" accept=".pdf" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:bg-slate-800 file:text-teal-400">
+          {% if project and project.qa_report_doc %}
+            <a href="{{ url_for('serve_upload', subfolder='docs', filename=project.qa_report_doc) }}" target="_blank" class="text-[11px] text-teal-400 hover:underline mt-1.5 inline-block"><i class="fas fa-check"></i> {{ project.qa_report_doc }}</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="flex items-center justify-end gap-3 pt-2">
+      <a href="{{ url_for('admin_projects') }}" class="px-5 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 transition-colors">Batal</a>
+      <button type="submit"
+        class="px-8 py-3 bg-gradient-to-r from-teal-500 to-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-lg shadow-teal-500/25 hover:shadow-teal-500/40 hover:opacity-95 transition-all flex items-center gap-2">
+        <i class="fas fa-save"></i>
+        <span>{{ 'Simpan Perubahan Projek' if project else 'Tambah Projek Baru' }}</span>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+{% endblock %}

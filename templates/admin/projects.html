@@ -1,0 +1,145 @@
+{% extends 'admin/base.html' %}
+
+{% block title %}Kelola Projek Portofolio{% endblock %}
+{% block header_title %}Projek Portofolio{% endblock %}
+{% block header_desc %}Tambah, perbarui gambar cover, tautan dokumen, dan kelola projek yang ditampilkan.{% endblock %}
+
+{% block content %}
+<div class="space-y-6 max-w-6xl">
+
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div>
+      <h3 class="text-lg font-bold text-white">Daftar Projek ({{ projects|length }})</h3>
+      <p class="text-xs text-slate-400">Urutan tampilan di frontend diatur oleh nomor urut (#1, #2, dst). Anda bisa menukar posisi langsung dengan tombol panah naik/turun.</p>
+    </div>
+
+    <div class="flex items-center gap-2.5 self-start md:self-auto">
+      <form action="{{ url_for('admin_renumber_projects') }}" method="POST" onsubmit="return confirm('Rapikan nomor urut semua projek menjadi berurutan 1, 2, 3...?');">
+        <button type="submit" 
+          class="px-3.5 py-2.5 rounded-xl bg-dark-800 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all flex items-center gap-1.5"
+          title="Otomatis merapikan nomor urut tanpa celah">
+          <i class="fas fa-arrow-down-1-9 text-teal-400"></i>
+          <span>Rapikan Urutan (1..N)</span>
+        </button>
+      </form>
+
+      <a href="{{ url_for('admin_add_project') }}"
+        class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-teal-500/20 hover:opacity-95 transition-all flex items-center gap-2">
+        <i class="fas fa-plus"></i>
+        <span>Tambah Projek Baru</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Projects List Table / Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for p in projects %}
+      <div class="bg-dark-850 border {% if p.is_featured %}border-teal-500/40{% else %}border-slate-800/80{% endif %} rounded-2xl overflow-hidden flex flex-col justify-between group hover:border-slate-700 transition-all">
+        <div>
+          <!-- Thumbnail -->
+          <div class="relative h-44 bg-slate-900 overflow-hidden border-b border-slate-800">
+            {% if p.image_url %}
+              <img src="{{ url_for('serve_upload', subfolder='projects', filename=p.image_url) }}" alt="{{ p.title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            {% else %}
+              <div class="w-full h-full flex flex-col items-center justify-center text-slate-600">
+                <i class="fas fa-image text-3xl mb-1"></i>
+                <span class="text-[11px]">Belum ada cover</span>
+              </div>
+            {% endif %}
+
+            <!-- Category & Order Badges -->
+            <div class="absolute top-3 left-3 flex gap-1.5 flex-wrap items-center">
+              <span class="px-2.5 py-1 text-[11px] font-extrabold rounded-lg bg-teal-500 text-slate-950 shadow-md">
+                #{{ p.order_num }}
+              </span>
+              <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-900/90 text-teal-400 backdrop-blur-md border border-teal-500/30">
+                {{ p.category }}
+              </span>
+            </div>
+
+            {% if p.is_featured %}
+              <div class="absolute top-3 right-3">
+                <span class="px-2 py-0.5 text-[10px] font-bold rounded-md bg-amber-500/90 text-slate-950 backdrop-blur-md">
+                  <i class="fas fa-star text-[9px]"></i> Featured
+                </span>
+              </div>
+            {% endif %}
+          </div>
+
+          <!-- Body -->
+          <div class="p-5">
+            <h4 class="font-bold text-base text-white line-clamp-1 group-hover:text-teal-400 transition-colors">{{ p.title }}</h4>
+            <p class="text-xs text-slate-400 mt-2 line-clamp-2 leading-relaxed">{{ p.short_desc or p.full_desc }}</p>
+
+            <!-- Tech Tags -->
+            {% if p.tech_tags %}
+              <div class="flex flex-wrap gap-1.5 mt-3">
+                {% for tag in p.tech_tags.split(',') %}
+                  {% if tag.strip() %}
+                    <span class="text-[10px] px-2 py-0.5 rounded-md bg-slate-900 text-slate-400 border border-slate-800">{{ tag.strip() }}</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endif %}
+
+            <!-- Attached Docs Indicator -->
+            {% if p.prd_doc or p.test_plan_doc or p.test_design_doc or p.qa_report_doc %}
+              <div class="mt-3 pt-3 border-t border-slate-800/80 flex items-center gap-2 text-[11px] text-teal-400">
+                <i class="fas fa-paperclip"></i>
+                <span>Terdapat Berkas/Laporan QA & Dokumen</span>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="p-4 bg-slate-900/50 border-t border-slate-800/80 flex items-center justify-between gap-2">
+          <!-- Reorder buttons (Naik / Turun) -->
+          <div class="flex items-center gap-1">
+            <form action="{{ url_for('admin_move_project', id=p.id, direction='up') }}" method="POST" class="inline">
+              <button type="submit" title="Pindah ke Atas / Sebelumnya"
+                class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-teal-500 hover:text-slate-950 text-slate-300 border border-slate-700 transition-colors text-xs {% if loop.first %}opacity-25 cursor-not-allowed pointer-events-none{% endif %}">
+                <i class="fas fa-arrow-up"></i>
+              </button>
+            </form>
+            <form action="{{ url_for('admin_move_project', id=p.id, direction='down') }}" method="POST" class="inline">
+              <button type="submit" title="Pindah ke Bawah / Berikutnya"
+                class="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-800 hover:bg-teal-500 hover:text-slate-950 text-slate-300 border border-slate-700 transition-colors text-xs {% if loop.last %}opacity-25 cursor-not-allowed pointer-events-none{% endif %}">
+                <i class="fas fa-arrow-down"></i>
+              </button>
+            </form>
+          </div>
+
+          <div class="flex items-center gap-2">
+            {% if p.github_url %}
+              <a href="{{ p.github_url }}" target="_blank" class="text-slate-400 hover:text-white text-xs p-1" title="GitHub Repo"><i class="fab fa-github"></i></a>
+            {% endif %}
+            {% if p.demo_url %}
+              <a href="{{ p.demo_url }}" target="_blank" class="text-slate-400 hover:text-teal-400 text-xs p-1" title="Demo Website"><i class="fas fa-arrow-up-right-from-square"></i></a>
+            {% endif %}
+
+            <a href="{{ url_for('admin_edit_project', id=p.id) }}"
+              class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-teal-400 rounded-lg text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1.5">
+              <i class="fas fa-edit text-[11px]"></i>
+              <span>Edit</span>
+            </a>
+            <form action="{{ url_for('admin_delete_project', id=p.id) }}" method="POST" onsubmit="return confirm('Hapus projek ini?');" class="inline">
+              <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-400 transition-colors" title="Hapus">
+                <i class="fas fa-trash text-xs"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    {% else %}
+      <div class="col-span-full py-12 text-center bg-dark-850 border border-slate-800 rounded-2xl">
+        <i class="fas fa-folder-open text-4xl text-slate-600 mb-3"></i>
+        <p class="text-sm text-slate-400">Belum ada projek portofolio tersimpan.</p>
+        <a href="{{ url_for('admin_add_project') }}" class="mt-4 inline-block px-4 py-2 bg-teal-500 text-slate-950 font-bold text-xs rounded-xl">Tambah Sekarang</a>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
