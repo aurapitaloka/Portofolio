@@ -562,6 +562,21 @@ def admin_delete_experience(id):
     return redirect(url_for('admin_experiences'))
 
 
+def resequence_certificates(target_cert=None, target_order=None):
+    """
+    Pastikan semua sertifikat berurutan rapi dari 1 sampai N tanpa angka 0, negatif, atau duplikat.
+    Jika target_cert dan target_order diberikan, tempatkan target_cert pada urutan tersebut.
+    """
+    certs = Certificate.query.order_by(Certificate.order_num.asc(), Certificate.id.asc()).all()
+    if target_cert and target_order is not None:
+        certs = [c for c in certs if c.id != target_cert.id]
+        insert_idx = max(0, min(int(target_order) - 1, len(certs)))
+        certs.insert(insert_idx, target_cert)
+    for idx, c in enumerate(certs, start=1):
+        c.order_num = idx
+    db.session.commit()
+
+
 # 6. CERTIFICATES MANAGEMENT
 @app.route('/admin/certificates', methods=['GET', 'POST'])
 @login_required
@@ -573,7 +588,12 @@ def admin_certificates():
         year = request.form.get('year', '2025').strip()
         description = request.form.get('description', '').strip()
         credential_url = request.form.get('credential_url', '').strip()
-        order_num = int(request.form.get('order_num', 0))
+        try:
+            order_num = int(request.form.get('order_num', 1))
+        except (ValueError, TypeError):
+            order_num = 1
+        if order_num < 1:
+            order_num = 1
 
         image_url = None
         if 'image_file' in request.files:
@@ -591,12 +611,20 @@ def admin_certificates():
                 order_num=order_num
             )
             db.session.add(cert)
-            db.session.commit()
-            flash(f'Sertifikat "{title}" berhasil ditambahkan!', 'success')
+            db.session.flush()
+            resequence_certificates(target_cert=cert, target_order=order_num)
+            flash(f'Sertifikat "{title}" berhasil ditambahkan pada urutan #{cert.order_num}!', 'success')
             return redirect(url_for('admin_certificates'))
 
-    certificates = Certificate.query.order_by(Certificate.order_num.asc()).all()
-    return render_template('admin/certificates.html', certificates=certificates)
+    certificates = Certificate.query.order_by(Certificate.order_num.asc(), Certificate.id.asc()).all()
+    # Pastikan urutan selalu bersih 1..N
+    resequence_needed = any(c.order_num != i for i, c in enumerate(certificates, start=1))
+    if resequence_needed:
+        resequence_certificates()
+        certificates = Certificate.query.order_by(Certificate.order_num.asc(), Certificate.id.asc()).all()
+
+    next_order = len(certificates) + 1
+    return render_template('admin/certificates.html', certificates=certificates, next_order=next_order)
 
 @app.route('/admin/certificates/edit/<int:id>', methods=['POST'])
 @login_required
@@ -608,24 +636,63 @@ def admin_edit_certificate(id):
     cert.year = request.form.get('year', cert.year).strip()
     cert.description = request.form.get('description', cert.description).strip()
     cert.credential_url = request.form.get('credential_url', cert.credential_url).strip()
-    cert.order_num = int(request.form.get('order_num', cert.order_num))
+    
+    try:
+        new_order = int(request.form.get('order_num', cert.order_num))
+    except (ValueError, TypeError):
+        new_order = cert.order_num
+    if new_order < 1:
+        new_order = 1
 
     if 'image_file' in request.files:
         new_img = save_uploaded_file(request.files['image_file'], 'certificates', Config.ALLOWED_IMAGE_EXTENSIONS)
         if new_img:
             cert.image_url = new_img
 
+    resequence_certificates(target_cert=cert, target_order=new_order)
+    flash(f'Sertifikat "{cert.title}" berhasil diperbarui (Urutan #{cert.order_num})!', 'success')
+    return redirect(url_for('admin_certificates'))
+
+@app.route('/admin/certificates/reorder/<int:id>/<string:direction>', methods=['POST'])
+@login_required
+def admin_reorder_certificate(id, direction):
+    cert = Certificate.query.get_or_404(id)
+    certs = Certificate.query.order_by(Certificate.order_num.asc(), Certificate.id.asc()).all()
+    
+    # Pastikan resequence rapi 1..N
+    for idx, c in enumerate(certs, start=1):
+        c.order_num = idx
     db.session.commit()
-    flash(f'Sertifikat "{cert.title}" berhasil diperbarui!', 'success')
+    
+    current_idx = None
+    for idx, c in enumerate(certs):
+        if c.id == cert.id:
+            current_idx = idx
+            break
+            
+    if current_idx is not None:
+        if direction == 'up' and current_idx > 0:
+            target = certs[current_idx - 1]
+            certs[current_idx].order_num, target.order_num = target.order_num, certs[current_idx].order_num
+            db.session.commit()
+            flash(f'Urutan "{cert.title}" berhasil dinaikkan ke posisi #{certs[current_idx].order_num}!', 'success')
+        elif direction == 'down' and current_idx < len(certs) - 1:
+            target = certs[current_idx + 1]
+            certs[current_idx].order_num, target.order_num = target.order_num, certs[current_idx].order_num
+            db.session.commit()
+            flash(f'Urutan "{cert.title}" berhasil diturunkan ke posisi #{certs[current_idx].order_num}!', 'success')
+            
     return redirect(url_for('admin_certificates'))
 
 @app.route('/admin/certificates/delete/<int:id>', methods=['POST'])
 @login_required
 def admin_delete_certificate(id):
     cert = Certificate.query.get_or_404(id)
+    title = cert.title
     db.session.delete(cert)
-    db.session.commit()
-    flash('Sertifikat berhasil dihapus.', 'info')
+    db.session.flush()
+    resequence_certificates()
+    flash(f'Sertifikat "{title}" berhasil dihapus.', 'info')
     return redirect(url_for('admin_certificates'))
 
 

@@ -116,7 +116,7 @@ class Certificate(db.Model):
     image_url = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=True)
     credential_url = db.Column(db.String(255), nullable=True)
-    order_num = db.Column(db.Integer, default=0)
+    order_num = db.Column(db.Integer, default=1)
 
 
 class ContactMessage(db.Model):

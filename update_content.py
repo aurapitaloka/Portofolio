@@ -12,32 +12,34 @@ def update_portfolio_content():
         profile.nav_brand = "AP"
         profile.full_name = "Aura Pitaloka, S.Kom."
         profile.badge_text = "👋 Halo, Saya Aura Pitaloka"
-        profile.status_badge = "Open to Work • QA & Web Dev"
-        profile.tagline = "Quality Assurance Engineer & Web Developer"
-        profile.sub_tagline = "Fresh Graduate S1 Teknik Informatika (IPK 3.73 / Cumlaude)"
+        profile.status_badge = "Open to Work • QA & Software Engineer"
+        profile.tagline = "Quality Assurance Engineer & Software Engineer"
+        profile.sub_tagline = "Fresh Graduate D4 Teknik Informatika (IPK 3.73 / Cumlaude)"
         profile.hero_description = (
-            "Lulusan baru S1 Teknik Informatika Universitas Harkat Negeri dengan predikat Cumlaude (IPK 3.73). "
-            "Berfokus pada penjaminan mutu perangkat lunak (Quality Assurance) berstandar internasional ISO/IEC 25010 "
-            "serta perancangan aplikasi web modern yang andal, aman, responsif, dan siap produksi."
+            "Fresh graduate D4 Teknik Informatika dengan predikat Cumlaude (IPK 3.73) yang berfokus pada Software Quality Assurance "
+            "dan Software Engineering. Berpengalaman dalam automation testing (Katalon Studio, Postman) serta perancangan aplikasi "
+            "multi-platform (Web, Mobile, Desktop) berstandar internasional ISO/IEC 25010."
         )
         
         profile.about_title = "Profil & Latar Belakang"
-        profile.about_subtitle = "Komitmen pada Mutu Perangkat Lunak, Ketelitian Pengujian & Rekayasa Web"
+        profile.about_subtitle = "Komitmen pada Mutu Perangkat Lunak, Ketelitian Pengujian & Rekayasa Perangkat Lunak (Software Engineering)"
         profile.about_p1 = (
-            "Saya adalah Fresh Graduate S1 Teknik Informatika di Universitas Harkat Negeri dengan capaian IPK 3.73 (Cumlaude). "
+            "Saya adalah Fresh Graduate D4 Teknik Informatika di Universitas Harkat Negeri dengan capaian IPK 3.73 (Cumlaude). "
             "Saya memiliki ketertarikan mendalam serta keahlian praktis dalam siklus pengujian perangkat lunak (Software Testing Life Cycle - STLC), "
             "mulai dari analisis Product Requirement Document (PRD), penyusunan Test Plan dan Test Design, hingga eksekusi Test Case manual "
             "maupun terotomasi mengacu pada standar kualitas ISO/IEC 25010 (Functional Suitability, Performance Efficiency, Usability, dan Security)."
         )
         profile.about_p2 = (
-            "Selain berfokus pada QA Engineering, saya juga berpengalaman dalam perancangan aplikasi web (Full-Stack Development) "
-            "menggunakan Python (Flask), PHP (Laravel), MySQL, dan Tailwind CSS. Pengalaman magang profesional sebagai Programmer di IT Solution "
-            "serta rekam jejak kepemimpinan sebagai Pimpinan Umum pers mahasiswa membekali saya dengan pola pikir analitis yang tajam, "
-            "komunikasi lintas divisi yang efektif, dan perhatian tinggi terhadap detail dalam menghadirkan solusi teknologi bebas cacat (defect-free)."
+            "Sebagai Software Engineer, saya terbiasa merancang dan mengembangkan sistem perangkat lunak yang modular, terstruktur, dan scalable "
+            "(Python/Flask, PHP/Laravel, Flutter, Java) dengan integrasi RESTful API serta optimasi database. Prestasi Juara 2 Software Development "
+            "Competition AMCC CODE 5.0 (2025) dan pengalaman magang sebagai Programmer di IT Solution memperkuat keahlian teknis saya. "
+            "Pemahaman mendalam di sisi rekayasa perangkat lunak ini membuat saya memiliki perspektif menyeluruh dalam SDLC, "
+            "sehingga jauh lebih peka dan tajam dalam mengidentifikasi potensi defect saat melakukan pengujian mutu (QA), didukung kemampuan analitis "
+            "serta komunikasi tim yang efektif."
         )
 
-        profile.location = "Yogyakarta, Indonesia"
-        profile.footer_text = "© 2026 Aura Pitaloka, S.Kom. • Quality Assurance & Web Development"
+        profile.location = "Tegal, Indonesia"
+        profile.footer_text = "© 2026 Aura Pitaloka • Quality Assurance & Software Engineering"
 
         # 2. Update About Highlights
         AboutHighlight.query.delete()
@@ -49,14 +51,14 @@ def update_portfolio_content():
                 order_num=1
             ),
             AboutHighlight(
-                title="Web & API Engineering",
-                description="Pengembangan web modern berbasis Flask, Laravel, arsitektur RESTful API, dan optimasi basis data MySQL.",
-                icon="fas fa-code",
+                title="Software Engineering & Systems",
+                description="Pengembangan sistem software yang handal, modular, dan clean code (Python, Laravel, Flutter, Java) dengan arsitektur RESTful API & optimasi database.",
+                icon="fas fa-laptop-code",
                 order_num=2
             ),
             AboutHighlight(
-                title="Cumlaude & Leadership",
-                description="Lulusan berprestasi dengan IPK 3.73, berjiwa kepemimpinan teruji dalam memimpin tim redaksi, komunikatif, dan berintegritas.",
+                title="Cumlaude & Analytical Mindset",
+                description="Lulusan berprestasi D4 Teknik Informatika IPK 3.73, pemenang kompetisi software dev, berjiwa kepemimpinan, analitis, dan solutif.",
                 icon="fas fa-award",
                 order_num=3
             ),

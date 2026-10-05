@@ -2,19 +2,24 @@
 
 {% block title %}Kelola Sertifikasi & Prestasi{% endblock %}
 {% block header_title %}Sertifikasi & Prestasi{% endblock %}
-{% block header_desc %}Unggah sertifikat magang, kejuaraan lomba, dan pelatihan dengan gambar resolusi tinggi.{% endblock %}
+{% block header_desc %}Unggah dan atur urutan sertifikat magang, kejuaraan lomba, dan pelatihan.{% endblock %}
 
 {% block content %}
 <div class="space-y-6 max-w-6xl">
 
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
     <div>
-      <h3 class="text-lg font-bold text-white">Daftar Sertifikat ({{ certificates|length }})</h3>
-      <p class="text-xs text-slate-400">Pengunjung dapat melihat sertifikat ini dengan modal preview foto berkualitas tinggi.</p>
+      <div class="flex items-center gap-2.5">
+        <h3 class="text-lg font-bold text-white">Daftar Sertifikat ({{ certificates|length }})</h3>
+        <span class="px-2.5 py-0.5 text-[11px] font-bold rounded-lg bg-teal-500/10 text-teal-400 border border-teal-500/20">
+          Urutan #1 - #{{ certificates|length }}
+        </span>
+      </div>
+      <p class="text-xs text-slate-400 mt-1">Urutan otomatis dimulai dari 1. Anda dapat menaikkan/menurunkan posisi langsung dengan tombol panah (⬆️ / ⬇️).</p>
     </div>
 
     <button type="button" onclick="openAddCertModal()"
-      class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-teal-500/20 hover:opacity-95 transition-all flex items-center gap-2 self-start md:self-auto">
+      class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-teal-500/20 hover:opacity-95 transition-all flex items-center gap-2 self-start md:self-auto cursor-pointer">
       <i class="fas fa-plus"></i>
       <span>Upload Sertifikat Baru</span>
     </button>
@@ -22,7 +27,7 @@
 
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for c in certificates %}
-      <div class="bg-dark-850 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between group hover:border-slate-700 transition-all">
+      <div class="bg-dark-850 border border-slate-800/80 rounded-2xl overflow-hidden flex flex-col justify-between group hover:border-slate-700 transition-all shadow-md">
         <div>
           <!-- Certificate Image Preview -->
           <div class="relative aspect-[16/10] bg-slate-900 overflow-hidden border-b border-slate-800">
@@ -35,14 +40,37 @@
               </div>
             {% endif %}
 
-            <div class="absolute top-3 left-3">
+            <!-- Top Left: Urutan Tampil (#1, #2, ...) & Kategori -->
+            <div class="absolute top-3 left-3 flex items-center gap-1.5 flex-wrap">
+              <span class="px-2.5 py-1 text-xs font-black rounded-lg bg-teal-500 text-slate-950 shadow-lg flex items-center gap-1">
+                #{{ c.order_num }}
+              </span>
               <span class="px-2.5 py-1 text-[11px] font-bold rounded-lg bg-slate-900/90 text-amber-400 backdrop-blur-md border border-amber-500/30">
                 {{ c.category }}
               </span>
             </div>
 
-            <div class="absolute top-3 right-3">
-              <span class="px-2 py-0.5 text-[10px] font-semibold rounded-md bg-slate-900/80 text-slate-300 backdrop-blur-md">
+            <!-- Top Right: Tombol Panah Naik/Turun & Tahun -->
+            <div class="absolute top-3 right-3 flex items-center gap-1">
+              <!-- Tombol Naik -->
+              <form action="{{ url_for('admin_reorder_certificate', id=c.id, direction='up') }}" method="POST" class="inline">
+                <button type="submit" {% if loop.first %}disabled{% endif %}
+                  title="Naikkan Urutan (Tampil Lebih Awal)"
+                  class="w-7 h-7 rounded-lg bg-slate-900/90 hover:bg-teal-500 hover:text-slate-950 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all backdrop-blur-md border border-slate-700/60 shadow text-xs cursor-pointer">
+                  <i class="fas fa-chevron-up"></i>
+                </button>
+              </form>
+
+              <!-- Tombol Turun -->
+              <form action="{{ url_for('admin_reorder_certificate', id=c.id, direction='down') }}" method="POST" class="inline">
+                <button type="submit" {% if loop.last %}disabled{% endif %}
+                  title="Turunkan Urutan (Tampil Lebih Belakang)"
+                  class="w-7 h-7 rounded-lg bg-slate-900/90 hover:bg-teal-500 hover:text-slate-950 text-slate-300 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all backdrop-blur-md border border-slate-700/60 shadow text-xs cursor-pointer">
+                  <i class="fas fa-chevron-down"></i>
+                </button>
+              </form>
+
+              <span class="px-2 py-1 text-[10px] font-semibold rounded-lg bg-slate-900/90 text-slate-300 backdrop-blur-md border border-slate-700/50">
                 {{ c.year }}
               </span>
             </div>
@@ -60,23 +88,22 @@
 
         <!-- Footer Actions -->
         <div class="p-4 bg-slate-900/50 border-t border-slate-800/80 flex items-center justify-between">
-          <div>
+          <div class="flex flex-col">
+            <span class="text-[11px] font-bold text-teal-400">Urutan ke-{{ c.order_num }}</span>
             {% if c.credential_url %}
-              <a href="{{ c.credential_url }}" target="_blank" class="text-xs text-teal-400 hover:underline flex items-center gap-1">
-                <i class="fas fa-external-link-alt text-[10px]"></i> Kredensial
+              <a href="{{ c.credential_url }}" target="_blank" class="text-[11px] text-slate-400 hover:text-teal-300 hover:underline flex items-center gap-1 mt-0.5">
+                <i class="fas fa-external-link-alt text-[9px]"></i> Kredensial
               </a>
-            {% else %}
-              <span class="text-[11px] text-slate-500">Urutan: {{ c.order_num }}</span>
             {% endif %}
           </div>
 
           <div class="flex items-center gap-1.5">
             <button type="button" onclick='openEditCertModal({{ c.id }}, {{ c.title|tojson }}, {{ c.issuer|tojson }}, {{ c.category|tojson }}, {{ c.year|tojson }}, {{ (c.description or "")|tojson }}, {{ (c.credential_url or "")|tojson }}, {{ c.order_num }})'
-              class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-teal-400 rounded-lg text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1">
+              class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-teal-400 rounded-lg text-xs font-semibold border border-slate-700 transition-colors flex items-center gap-1 cursor-pointer">
               <i class="fas fa-edit text-[11px]"></i> Edit
             </button>
-            <form action="{{ url_for('admin_delete_certificate', id=c.id) }}" method="POST" onsubmit="return confirm('Hapus sertifikat ini?');" class="inline">
-              <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-400 transition-colors">
+            <form action="{{ url_for('admin_delete_certificate', id=c.id) }}" method="POST" onsubmit="return confirm('Hapus sertifikat ini? Urutan nomor lainnya akan otomatis disesuaikan.');" class="inline">
+              <button type="submit" class="p-1.5 text-slate-500 hover:text-rose-400 transition-colors cursor-pointer" title="Hapus Sertifikat">
                 <i class="fas fa-trash text-xs"></i>
               </button>
             </form>
@@ -95,7 +122,7 @@
   <div class="bg-dark-850 border border-slate-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
     <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
       <h3 id="modal-cert-title" class="font-bold text-white text-base">Unggah Sertifikat Baru</h3>
-      <button type="button" onclick="closeCertModal()" class="text-slate-400 hover:text-white">
+      <button type="button" onclick="closeCertModal()" class="text-slate-400 hover:text-white cursor-pointer">
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -123,6 +150,8 @@
             <option value="Kompetisi">
             <option value="Pelatihan">
             <option value="Sertifikasi Keahlian">
+            <option value="Course Online">
+            <option value="Workshop">
             <option value="Webinar">
           </datalist>
         </div>
@@ -136,9 +165,12 @@
         </div>
 
         <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Urutan Tampil</label>
-          <input type="number" id="cert-order" name="order_num" value="0"
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            Nomor Urutan Tampil <span class="text-teal-400 font-bold">(Mulai dari 1)</span>
+          </label>
+          <input type="number" id="cert-order" name="order_num" min="1" value="{{ next_order }}" required
             class="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm text-white focus:outline-none focus:border-teal-500">
+          <span class="text-[11px] text-slate-400 mt-1 block">Urutan #1 akan tampil paling pertama di web.</span>
         </div>
       </div>
 
@@ -162,9 +194,9 @@
 
       <div class="pt-3 flex justify-end gap-2">
         <button type="button" onclick="closeCertModal()"
-          class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700">Batal</button>
+          class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-800 text-slate-300 hover:bg-slate-700 cursor-pointer">Batal</button>
         <button type="submit"
-          class="px-5 py-2 rounded-xl text-xs font-bold bg-teal-500 text-slate-950 hover:bg-teal-400">Simpan Sertifikat</button>
+          class="px-5 py-2 rounded-xl text-xs font-bold bg-teal-500 text-slate-950 hover:bg-teal-400 cursor-pointer">Simpan Sertifikat</button>
       </div>
     </form>
   </div>
@@ -183,7 +215,7 @@
     document.getElementById('cert-year').value = '2025';
     document.getElementById('cert-desc').value = '';
     document.getElementById('cert-credential-url').value = '';
-    document.getElementById('cert-order').value = '0';
+    document.getElementById('cert-order').value = "{{ next_order }}";
     document.getElementById('modal-cert').classList.remove('hidden');
   }
 
